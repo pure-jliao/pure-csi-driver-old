@@ -12,7 +12,7 @@ class Constants {
 
 // Select a Repo to add test for
 def addTest = selectRepo(Constants.GO_REPO_ROOT, "4.0.9-731f940f")
-def addTestWithAllocator = selectRepoWithResource(Constants.GO_REPO_ROOT)
+def addTestWithAllocator = selectRepoWithResource(Constants.GO_REPO_ROOT, "4.0.9-731f940f")
 
 def deleteTestCluster(boolean passed) {
     if (passed || params.DELETE_CLUSTER_ON_ERROR) {
@@ -63,18 +63,6 @@ addTest(Constants.NODE_LABEL_NSTK_LP_DEFAULT, buildTasks, "Build", 15) {
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Add Unit Tests
-
-
-//def quickTestTasks = [:]
-//
-//addTest(Constants.NODE_LABEL_NSTK_LP_DEFAULT, quickTestTasks, "Unit Tests", 15) {
-//    sh 'cd $WORKSPACE && make unit-tests'
-//}
-
-
-
-//////////////////////////////////////////////////////////////////////////////
 // Add Functional Tests
 
 // Run a stable smoke test on a single node cluster
@@ -85,7 +73,7 @@ def backendType = "pure-fa-iscsi"
 
 def functionalTestTasks = [:]
 
-addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "k8s-${k8sVersion}-${osType}-${backendType}", 60, {
+addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "helm install", 30, {
 //    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
 //             "TEST_PURE_BACKEND=${backendType}",
 //             "TEST_CLUSTER_SIZE=1",
@@ -100,7 +88,8 @@ addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, 
 //            archiveTestArtifacts("k8s-${k8sVersion}-${osType}-${backendType}")
 //        }
 //    }
-    echo "functional test"
+    echo "functional test 1"
+    deleteTestCluster(true)
 }, {
     withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
              "TEST_PURE_BACKEND=${backendType}",
@@ -116,7 +105,7 @@ addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, 
 //}
 //
 //k8sVersion = "1.15"
-//addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "CSI-Sanity", 30, {
+addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "operator install", 30, {
 //    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
 //             "TEST_PURE_BACKEND=${backendType}",
 //             "TEST_CLUSTER_SIZE=1",
@@ -131,14 +120,16 @@ addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, 
 //            archiveTestArtifacts("CSI-Sanity")
 //        }
 //    }
-//}, {
-//    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
-//             "TEST_PURE_BACKEND=${backendType}",
-//             "TEST_CLUSTER_SIZE=1",
-//             "KUBERNETES_VERSION=${k8sVersion}"]) {
-//        sh './ci/provision-cluster.sh'
-//    }
-//})
+    echo "functional test 2"
+    deleteTestCluster(true)
+}, {
+    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
+             "TEST_PURE_BACKEND=${backendType}",
+             "TEST_CLUSTER_SIZE=1",
+             "KUBERNETES_VERSION=${k8sVersion}"]) {
+        sh './ci/provision-cluster.sh'
+    }
+})
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -279,17 +270,11 @@ if (params.STAGE_0) {
     }
 }
 
-//if (params.STAGE_1) {
-//    stage("Stage 1") {
-//        parallel quickTestTasks
-//    }
-//}
-
-//if (params.STAGE_1) {
-//    stage("Stage 1") {
-//        parallel functionalTestTasks
-//    }
-//}
+if (params.STAGE_1) {
+    stage("Stage 1") {
+        parallel functionalTestTasks
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Run compatibility tests, break down to several stages, each runs tests against

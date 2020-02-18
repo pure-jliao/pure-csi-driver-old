@@ -17,5 +17,9 @@ HELM_DIR=${IMG_DIR}/..
 mkdir -p ${IMG_DIR}/helm-charts
 cp -r ${HELM_DIR}/pure-csi ${IMG_DIR}/helm-charts
 
+# Build and push the docker image to the repository
 docker build -t ${IMG_TAG} ${IMG_DIR}
 docker push ${IMG_TAG}
+
+# Cleanup leftovers on our node, but don't fail the script if we cant remove them
+sudo docker rmi ${IMG_TAG} || echo "WARNING: Failed to remove docker image!"
