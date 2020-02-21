@@ -57,7 +57,11 @@ def buildTasks = [:]
 
 addTest(Constants.NODE_LABEL_NSTK_LP_DEFAULT, buildTasks, "Build", 15) {
     echo "build stage to build an operator image"
+    echo params.PUBLIC_BRANCH
     sh "./ci/build_and_push_operator_image.sh"
+    echo env.IMAGE_REPO
+    env.IMAGE_REPO = params.PUBLIC_BRANCH
+    echo env.IMAGE_REPO
 }
 
 
@@ -227,7 +231,8 @@ addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, 
 // Setup some properties/parameters for the build
 
 def parametersToAdd = getParametersForTestStage(buildTasks, "STAGE_0", 'Run Stage 0') +
-        getParametersForTestStage(functionalTestTasks, "STAGE_1", "Run Stage 1")
+        getParametersForTestStage(functionalTestTasks, "STAGE_1", "Run Stage 1") +
+        string(defaultValue: "master url", description: 'master branch', name: 'PUBLIC_BRANCH')
         //getParametersForTestStage(compatibilityTestTasks, "STAGE_3", "Run Stage 3") +
         //booleanParam(defaultValue: true, description: "Delete cluster on error", name: "DELETE_CLUSTER_ON_ERROR") +
         //booleanParam(defaultValue: true, description: "Upload log to graylog", name: "UPLOAD_TO_GRAYLOG") +
@@ -266,11 +271,11 @@ if (params.STAGE_0) {
     }
 }
 
-if (params.STAGE_1) {
-    stage("Stage 1") {
-        parallel functionalTestTasks
-    }
-}
+//if (params.STAGE_1) {
+//    stage("Stage 1") {
+//        parallel functionalTestTasks
+//    }
+//}
 
 //////////////////////////////////////////////////////////////////////////////
 // Run compatibility tests, break down to several stages, each runs tests against
