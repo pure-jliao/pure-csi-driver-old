@@ -74,22 +74,20 @@ def backendType = "pure-fa-iscsi"
 def functionalTestTasks = [:]
 
 addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "helm install", 30, {
-//    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
-//             "TEST_PURE_BACKEND=${backendType}",
-//             "TEST_CLUSTER_SIZE=1",
-//             "KUBERNETES_VERSION=${k8sVersion}"]) {
-//        def passed = false
-//        try {
-//            sh './ci/run-functional-tests.sh'
-//            passed = true
-//        }
-//        finally {
-//            deleteTestCluster(passed)
-//            archiveTestArtifacts("k8s-${k8sVersion}-${osType}-${backendType}")
-//        }
-//    }
-    echo "functional test 1"
-    deleteTestCluster(true)
+    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
+             "TEST_PURE_BACKEND=${backendType}",
+             "TEST_CLUSTER_SIZE=1",
+             "KUBERNETES_VERSION=${k8sVersion}"]) {
+        def passed = false
+        try {
+            sh './ci/run-functional-tests.sh'
+            passed = true
+        }
+        finally {
+            deleteTestCluster(passed)
+            archiveTestArtifacts("helm install")
+        }
+    }
 }, {
     withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
              "TEST_PURE_BACKEND=${backendType}",
@@ -103,25 +101,23 @@ addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, 
 //addTest(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "Vulnerability Tests", 30) {
 //    sh "./ci/run-vuln-tests.sh"
 //}
-//
+
 //k8sVersion = "1.15"
 addTestWithAllocator(Constants.NODE_LABEL_NSTK_LP_DEFAULT, functionalTestTasks, "operator install", 30, {
-//    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
-//             "TEST_PURE_BACKEND=${backendType}",
-//             "TEST_CLUSTER_SIZE=1",
-//             "KUBERNETES_VERSION=${k8sVersion}"]) {
-//        def passed = false
-//        try {
-//            sh './ci/run-csi-sanity.sh'
-//            passed = true
-//        }
-//        finally {
-//            deleteTestCluster(passed)
-//            archiveTestArtifacts("CSI-Sanity")
-//        }
-//    }
-    echo "functional test 2"
-    deleteTestCluster(true)
+    withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
+             "TEST_PURE_BACKEND=${backendType}",
+             "TEST_CLUSTER_SIZE=1",
+             "KUBERNETES_VERSION=${k8sVersion}"]) {
+        def passed = false
+        try {
+            sh './ci/run-functional-tests.sh'
+            passed = true
+        }
+        finally {
+            deleteTestCluster(passed)
+            archiveTestArtifacts("operator install")
+        }
+    }
 }, {
     withEnv(["TEST_CLUSTER_IMAGE=k8s-base-${osType}",
              "TEST_PURE_BACKEND=${backendType}",
